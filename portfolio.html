@@ -743,6 +743,77 @@ function closeMenu() {
   menubtn.style.display = "block";
   closebtn.style.display = "none";
 }
+      // DOM elements
+        const audio = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const status = document.getElementById('status');
+        const result = document.getElementById('result');
+        
+        // Initial setup
+        audio.volume = 0.5;
+        status.style.display = 'block';
+        
+        // Play function with detailed error reporting
+        async function playAudio() {
+            try {
+                await audio.play();
+                playBtn.textContent = '⏸ Pause';
+                status.style.display = 'none';
+                result.innerHTML = '<p class="success">✔ Music is playing successfully!</p>';
+                return true;
+            } catch (err) {
+                console.error('Playback failed:', err);
+                status.textContent = 'Browser blocked autoplay. Click play button.';
+                status.style.display = 'block';
+                result.innerHTML = `<p class="error">✖ Playback error: ${err.message}</p>
+                                  <p>Common causes: 
+                                  <br>- Browser autoplay restrictions
+                                  <br>- Mobile device limitations
+                                  <br>- Ad blockers/extensions</p>`;
+                return false;
+            }
+        }
+        
+        // Pause function
+        function pauseAudio() {
+            audio.pause();
+            playBtn.textContent = '▶ Play';
+        }
+        
+        // Play/pause toggle
+        playBtn.addEventListener('click', () => {
+            audio.paused ? playAudio() : pauseAudio();
+        });
+        
+        // Try to autoplay after any user interaction
+        const interactionTypes = [
+            'click', 'mousedown', 'touchstart', 
+            'keydown', 'scroll', 'pointerdown'
+        ];
+        
+        interactionTypes.forEach(type => {
+            document.addEventListener(type, initAudio, { once: true });
+        });
+        
+        function initAudio() {
+            status.textContent = 'Attempting to play...';
+            playAudio();
+        }
+        
+        // Fallback if no interaction after 3 seconds
+        setTimeout(() => {
+            if (audio.paused) {
+                status.textContent = 'Interact with page to enable music';
+                status.style.display = 'block';
+            }
+        }, 3000);
+        
+        // Debug info
+        result.innerHTML += `
+            <h3>Debug Information:</h3>
+            <p><strong>Browser:</strong> ${navigator.userAgent}</p>
+            <p><strong>Autoplay support:</strong> ${typeof audio.play === 'function' ? 'Yes' : 'No'}</p>
+        `;
 
   </script>
   
